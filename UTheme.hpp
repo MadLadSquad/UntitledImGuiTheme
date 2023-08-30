@@ -20,6 +20,7 @@ namespace UImGui
         static void save(const char* file) noexcept;
 
         static void showThemeEditor(void* bOpen) noexcept;
+        static void showThemeEditorInline() noexcept;
     private:
         constexpr static const char* colourStrings[] =
         {

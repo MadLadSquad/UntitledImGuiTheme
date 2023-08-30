@@ -186,41 +186,46 @@ void UImGui::Theme::showThemeEditor(void* bOpen) noexcept
 {
     if (ImGui::Begin("UntitledImGuiTheme Theme Editor", (bool*)bOpen))
     {
-        auto& style = ImGui::GetStyle();
-        for (size_t i = 0; i < ImGuiCol_COUNT; i++)
-            ImGui::ColorEdit4(colourStrings[i], (float*)&style.Colors[i]);
-
-        RENDER_STYLE_VAR_EDIT(Alpha);
-        RENDER_STYLE_VAR_EDIT(DisabledAlpha);
-        RENDER_STYLE_VAR_EDIT(WindowPadding);
-        RENDER_STYLE_VAR_EDIT(WindowRounding);
-        RENDER_STYLE_VAR_EDIT(WindowBorderSize);
-        RENDER_STYLE_VAR_EDIT(WindowMinSize);
-        RENDER_STYLE_VAR_EDIT(WindowTitleAlign);
-        RENDER_STYLE_VAR_EDIT(ChildRounding);
-        RENDER_STYLE_VAR_EDIT(ChildBorderSize);
-        RENDER_STYLE_VAR_EDIT(PopupRounding);
-        RENDER_STYLE_VAR_EDIT(PopupBorderSize);
-        RENDER_STYLE_VAR_EDIT(FramePadding);
-        RENDER_STYLE_VAR_EDIT(FrameRounding);
-        RENDER_STYLE_VAR_EDIT(FrameBorderSize);
-        RENDER_STYLE_VAR_EDIT(ItemSpacing);
-        RENDER_STYLE_VAR_EDIT(ItemInnerSpacing);
-        RENDER_STYLE_VAR_EDIT(IndentSpacing);
-        RENDER_STYLE_VAR_EDIT(CellPadding);
-        RENDER_STYLE_VAR_EDIT(ScrollbarSize);
-        RENDER_STYLE_VAR_EDIT(ScrollbarRounding);
-        RENDER_STYLE_VAR_EDIT(GrabMinSize);
-        RENDER_STYLE_VAR_EDIT(GrabRounding);
-        RENDER_STYLE_VAR_EDIT(TabRounding);
-        RENDER_STYLE_VAR_EDIT(ButtonTextAlign);
-        RENDER_STYLE_VAR_EDIT(SelectableTextAlign);
-        RENDER_STYLE_VAR_EDIT(SeparatorTextBorderSize);
-        RENDER_STYLE_VAR_EDIT(SeparatorTextAlign);
-        RENDER_STYLE_VAR_EDIT(SeparatorTextPadding);
-#ifdef IMGUI_HAS_DOCK
-        RENDER_STYLE_VAR_EDIT(DockingSeparatorSize);
-#endif
+        showThemeEditorInline();
         ImGui::End();
     }
+}
+
+void UImGui::Theme::showThemeEditorInline() noexcept
+{
+    auto& style = ImGui::GetStyle();
+    for (size_t i = 0; i < ImGuiCol_COUNT; i++)
+        ImGui::ColorEdit4(colourStrings[i], (float*)&style.Colors[i]);
+
+    RENDER_STYLE_VAR_EDIT(Alpha);
+    RENDER_STYLE_VAR_EDIT(DisabledAlpha);
+    RENDER_STYLE_VAR_EDIT(WindowPadding);
+    RENDER_STYLE_VAR_EDIT(WindowRounding);
+    RENDER_STYLE_VAR_EDIT(WindowBorderSize);
+    RENDER_STYLE_VAR_EDIT(WindowMinSize);
+    RENDER_STYLE_VAR_EDIT(WindowTitleAlign);
+    RENDER_STYLE_VAR_EDIT(ChildRounding);
+    RENDER_STYLE_VAR_EDIT(ChildBorderSize);
+    RENDER_STYLE_VAR_EDIT(PopupRounding);
+    RENDER_STYLE_VAR_EDIT(PopupBorderSize);
+    RENDER_STYLE_VAR_EDIT(FramePadding);
+    RENDER_STYLE_VAR_EDIT(FrameRounding);
+    RENDER_STYLE_VAR_EDIT(FrameBorderSize);
+    RENDER_STYLE_VAR_EDIT(ItemSpacing);
+    RENDER_STYLE_VAR_EDIT(ItemInnerSpacing);
+    RENDER_STYLE_VAR_EDIT(IndentSpacing);
+    RENDER_STYLE_VAR_EDIT(CellPadding);
+    RENDER_STYLE_VAR_EDIT(ScrollbarSize);
+    RENDER_STYLE_VAR_EDIT(ScrollbarRounding);
+    RENDER_STYLE_VAR_EDIT(GrabMinSize);
+    RENDER_STYLE_VAR_EDIT(GrabRounding);
+    RENDER_STYLE_VAR_EDIT(TabRounding);
+    RENDER_STYLE_VAR_EDIT(ButtonTextAlign);
+    RENDER_STYLE_VAR_EDIT(SelectableTextAlign);
+    RENDER_STYLE_VAR_EDIT(SeparatorTextBorderSize);
+    RENDER_STYLE_VAR_EDIT(SeparatorTextAlign);
+    RENDER_STYLE_VAR_EDIT(SeparatorTextPadding);
+#ifdef IMGUI_HAS_DOCK
+    RENDER_STYLE_VAR_EDIT(DockingSeparatorSize);
+#endif
 }
