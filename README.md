@@ -1,5 +1,4 @@
 # UntitledImGuiTheme
-[![CI](https://github.com/MadLadSquad/UntitledExec/actions/workflows/CI.yaml/badge.svg)](https://github.com/MadLadSquad/UntitledExec/actions/workflows/ci.yaml)
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
 [![trello](https://img.shields.io/badge/Trello-UDE-blue])](https://trello.com/b/HmfuRY2K/untitleddesktop)
 [![Discord](https://img.shields.io/discord/717037253292982315.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/4wgH8ZE)
@@ -10,6 +9,7 @@ Features:
 1. Loads a theme from a file in YAML format and automatically loads the theme
 1. Saves themes to the same format
 1. Is application-specific
+1. Has a built-in theme editor widget
 
 ## Learning
 All information can be found on the [wiki](https://github.com/MadLadSquad/UntitledImGuiTheme/wiki/Home).
