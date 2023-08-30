@@ -45,7 +45,7 @@ namespace YAML
 
         static bool decode(const Node& node, ImVec2& rhs) noexcept
         {
-            if (!node.IsSequence() || node.size() != 4)
+            if (!node.IsSequence() || node.size() != 2)
                 return false;
 
             rhs.x = node[0].as<float>();
@@ -71,7 +71,7 @@ YAML::Emitter& operator<<(YAML::Emitter& out, const ImVec2& vect) noexcept
 
 #define LOAD_YAML_STYLE_VAR(x) if (out[#x]) style.x = out[#x].as<decltype(ImGuiStyle::x)>()
 #define OUTPUT_YAML_STYLE_VAR(x) out << YAML::Key << #x << YAML::Value << style.x;
-#define RENDER_STYLE_VAR_EDIT(x) renderStyleVar<decltype(ImGuiStyle::x)>(#x, style.x)
+#define RENDER_STYLE_VAR_EDIT(x) renderStyleVar(#x, style.x)
 
 int UImGui::Theme::load(const char* file) noexcept
 {
@@ -172,16 +172,11 @@ void UImGui::Theme::save(const char* file) noexcept
     o.close();
 }
 
-template<typename T>
-void renderStyleVar(const char* name, T& t) noexcept{}
-
-template<float>
 void renderStyleVar(const char* name, float& t) noexcept
 {
     ImGui::DragFloat(name, &t);
 }
 
-template<ImVec2>
 void renderStyleVar(const char* name, ImVec2& t) noexcept
 {
     ImGui::DragFloat2(name, (float*)&t);
@@ -189,12 +184,11 @@ void renderStyleVar(const char* name, ImVec2& t) noexcept
 
 void UImGui::Theme::showThemeEditor(void* bOpen) noexcept
 {
-    if (*static_cast<bool*>(bOpen))
+    if (ImGui::Begin("UntitledImGuiTheme Theme Editor", (bool*)bOpen))
     {
-        ImGui::Begin("UntitledImGuiTheme Theme Editor", (bool*)bOpen);
         auto& style = ImGui::GetStyle();
         for (size_t i = 0; i < ImGuiCol_COUNT; i++)
-            ImGui::ColorPicker4(colourStrings[i], (float*)&style.Colors[i]);
+            ImGui::ColorEdit4(colourStrings[i], (float*)&style.Colors[i]);
 
         RENDER_STYLE_VAR_EDIT(Alpha);
         RENDER_STYLE_VAR_EDIT(DisabledAlpha);
