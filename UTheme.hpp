@@ -8,7 +8,17 @@
 
 namespace UImGui
 {
-    class Theme
+    struct IMGUI_API SemanticColorData
+    {
+        ImVec4 DestructiveColor;
+        ImVec4 DestructiveColorActive;
+        ImVec4 SuccessColor;
+        ImVec4 SuccessColorActive;
+        ImVec4 WarningColor;
+        ImVec4 WarningColorActive;
+    };
+
+    class IMGUI_API Theme
     {
     public:
         /**
@@ -16,8 +26,8 @@ namespace UImGui
          * @param file - The location of the theme file
          * @return Result state. 0 on success, -1 on bad file
          */
-        static int load(const char* file) noexcept;
-        static void save(const char* file) noexcept;
+        static int load(const char* file, SemanticColorData* semanticColorData = nullptr) noexcept;
+        static void save(const char* file, SemanticColorData* semanticColorData = nullptr) noexcept;
 
         static void showThemeEditor(void* bOpen) noexcept;
         static void showThemeEditorInline() noexcept;
@@ -81,6 +91,13 @@ namespace UImGui
             "NavWindowingHighlight",
             "NavWindowingDimBg",
             "ModalWindowDimBg",
+
+            "DestructiveColor",
+            "DestructiveColorActive",
+            "SuccessColor",
+            "SuccessColorActive",
+            "WarningColor",
+            "WarningColorActive"
         };
     };
 }

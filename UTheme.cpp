@@ -73,7 +73,10 @@ YAML::Emitter& operator<<(YAML::Emitter& out, const ImVec2& vect) noexcept
 #define OUTPUT_YAML_STYLE_VAR(x) out << YAML::Key << #x << YAML::Value << style.x;
 #define RENDER_STYLE_VAR_EDIT(x) renderStyleVar(#x, style.x)
 
-int UImGui::Theme::load(const char* file) noexcept
+#define LOAD_YAML_SEMANTIC_COLOUR(x, y) if (out[#y]) (x)->y = out[#y].as<ImVec4>()
+#define OUTPUT_YAML_SEMANTIC_COLOUR(x, y) out << YAML::Key << #y << YAML::Value << x->y;
+
+int UImGui::Theme::load(const char* file, SemanticColorData* semanticColorData) noexcept
 {
     YAML::Node out;
     try
@@ -120,10 +123,21 @@ int UImGui::Theme::load(const char* file) noexcept
 #ifdef IMGUI_HAS_DOCK
     LOAD_YAML_STYLE_VAR(DockingSeparatorSize);
 #endif
+
+    if (semanticColorData != nullptr)
+    {
+        LOAD_YAML_SEMANTIC_COLOUR(semanticColorData, DestructiveColor);
+        LOAD_YAML_SEMANTIC_COLOUR(semanticColorData, DestructiveColorActive);
+        LOAD_YAML_SEMANTIC_COLOUR(semanticColorData, SuccessColor);
+        LOAD_YAML_SEMANTIC_COLOUR(semanticColorData, SuccessColorActive);
+        LOAD_YAML_SEMANTIC_COLOUR(semanticColorData, WarningColor);
+        LOAD_YAML_SEMANTIC_COLOUR(semanticColorData, WarningColorActive);
+    }
+
     return 0;
 }
 
-void UImGui::Theme::save(const char* file) noexcept
+void UImGui::Theme::save(const char* file, SemanticColorData* semanticColorData) noexcept
 {
     auto& style = ImGui::GetStyle();
 
@@ -165,6 +179,16 @@ void UImGui::Theme::save(const char* file) noexcept
 #ifdef IMGUI_HAS_DOCK
     OUTPUT_YAML_STYLE_VAR(DockingSeparatorSize);
 #endif
+    if (semanticColorData != nullptr)
+    {
+        OUTPUT_YAML_SEMANTIC_COLOUR(semanticColorData, DestructiveColor);
+        OUTPUT_YAML_SEMANTIC_COLOUR(semanticColorData, DestructiveColorActive);
+        OUTPUT_YAML_SEMANTIC_COLOUR(semanticColorData, SuccessColor);
+        OUTPUT_YAML_SEMANTIC_COLOUR(semanticColorData, SuccessColorActive);
+        OUTPUT_YAML_SEMANTIC_COLOUR(semanticColorData, WarningColor);
+        OUTPUT_YAML_SEMANTIC_COLOUR(semanticColorData, WarningColorActive);
+    }
+
     out << YAML::EndMap;
 
     std::ofstream o(file);
