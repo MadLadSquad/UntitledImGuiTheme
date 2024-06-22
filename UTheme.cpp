@@ -137,9 +137,9 @@ int UImGui::Theme::load(const char* file, SemanticColorData* semanticColorData) 
     return 0;
 }
 
-void UImGui::Theme::save(const char* file, SemanticColorData* semanticColorData) noexcept
+void UImGui::Theme::save(const char* file, const SemanticColorData* semanticColorData) noexcept
 {
-    auto& style = ImGui::GetStyle();
+    const auto& style = ImGui::GetStyle();
 
     YAML::Emitter out;
     out << YAML::BeginMap;
@@ -208,7 +208,7 @@ void renderStyleVar(const char* name, ImVec2& t) noexcept
 
 void UImGui::Theme::showThemeEditor(void* bOpen) noexcept
 {
-    if (ImGui::Begin("UntitledImGuiTheme Theme Editor", (bool*)bOpen))
+    if (ImGui::Begin("UntitledImGuiTheme Theme Editor", static_cast<bool*>(bOpen)))
     {
         showThemeEditorInline();
         ImGui::End();
