@@ -32,6 +32,33 @@ namespace YAML
     };
 
     template<>
+    struct convert<UImGui::ThemeVec4>
+    {
+        static Node encode(const UImGui::ThemeVec4& rhs) noexcept
+        {
+            Node node;
+            node.push_back(rhs.x);
+            node.push_back(rhs.y);
+            node.push_back(rhs.z);
+            node.push_back(rhs.w);
+            node.SetStyle(EmitterStyle::Flow);
+            return node;
+        }
+
+        static bool decode(const Node& node, UImGui::ThemeVec4& rhs) noexcept
+        {
+            if (!node.IsSequence() || node.size() != 4)
+                return false;
+
+            rhs.x = node[0].as<float>();
+            rhs.y = node[1].as<float>();
+            rhs.z = node[2].as<float>();
+            rhs.w = node[3].as<float>();
+            return true;
+        }
+    };
+
+    template<>
     struct convert<ImVec2>
     {
         static Node encode(const ImVec2& rhs) noexcept
@@ -69,14 +96,21 @@ YAML::Emitter& operator<<(YAML::Emitter& out, const ImVec2& vect) noexcept
     return out;
 }
 
+YAML::Emitter& operator<<(YAML::Emitter& out, const UImGui::ThemeVec4& vect) noexcept
+{
+    out << YAML::Flow;
+    out << YAML::BeginSeq << vect.x << vect.y << vect.z << vect.w << YAML::EndSeq;
+    return out;
+}
+
 #define LOAD_YAML_STYLE_VAR(x) if (out[#x]) style.x = out[#x].as<decltype(ImGuiStyle::x)>()
 #define OUTPUT_YAML_STYLE_VAR(x) out << YAML::Key << #x << YAML::Value << style.x;
 #define RENDER_STYLE_VAR_EDIT(x) renderStyleVar(#x, style.x)
 
-#define LOAD_YAML_SEMANTIC_COLOUR(x, y) if (out[#y]) (x)->y = out[#y].as<ImVec4>()
+#define LOAD_YAML_SEMANTIC_COLOUR(x, y) if (out[#y]) (x)->y = out[#y].as<UImGui_ThemeVec4>()
 #define OUTPUT_YAML_SEMANTIC_COLOUR(x, y) out << YAML::Key << #y << YAML::Value << x->y;
 
-int UImGui::Theme::load(const char* file, SemanticColorData* semanticColorData) noexcept
+int UImGui::Theme::load(const char* file, SemanticColourData* semanticColorData) noexcept
 {
     YAML::Node out;
     try
@@ -137,7 +171,7 @@ int UImGui::Theme::load(const char* file, SemanticColorData* semanticColorData) 
     return 0;
 }
 
-void UImGui::Theme::save(const char* file, const SemanticColorData* semanticColorData) noexcept
+void UImGui::Theme::save(const char* file, const SemanticColourData* semanticColorData) noexcept
 {
     const auto& style = ImGui::GetStyle();
 
@@ -203,7 +237,7 @@ void renderStyleVar(const char* name, float& t) noexcept
 
 void renderStyleVar(const char* name, ImVec2& t) noexcept
 {
-    ImGui::DragFloat2(name, (float*)&t);
+    ImGui::DragFloat2(name, reinterpret_cast<float*>(&t));
 }
 
 void UImGui::Theme::showThemeEditor(void* bOpen) noexcept
@@ -219,7 +253,7 @@ void UImGui::Theme::showThemeEditorInline() noexcept
 {
     auto& style = ImGui::GetStyle();
     for (size_t i = 0; i < ImGuiCol_COUNT; i++)
-        ImGui::ColorEdit4(colourStrings[i], (float*)&style.Colors[i]);
+        ImGui::ColorEdit4(colourStrings[i], reinterpret_cast<float*>(&style.Colors[i]));
 
     RENDER_STYLE_VAR_EDIT(Alpha);
     RENDER_STYLE_VAR_EDIT(DisabledAlpha);

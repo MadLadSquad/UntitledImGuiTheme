@@ -5,20 +5,14 @@
     #endif // !<imgui.h>
 #endif
 #include <imgui.h>
+#include "Common.h"
 
 namespace UImGui
 {
-    struct IMGUI_API SemanticColorData
-    {
-        ImVec4 DestructiveColor;
-        ImVec4 DestructiveColorActive;
-        ImVec4 SuccessColor;
-        ImVec4 SuccessColorActive;
-        ImVec4 WarningColor;
-        ImVec4 WarningColorActive;
-    };
+    typedef UImGui_SemanticColourData SemanticColourData;
+    typedef UImGui_ThemeVec4 ThemeVec4;
 
-    class IMGUI_API Theme
+    class MLS_PUBLIC_API Theme
     {
     public:
         /**
@@ -27,8 +21,8 @@ namespace UImGui
          * @param semanticColorData - A semantic colour data struct that will be filled with semantic colour data
          * @return Result state. 0 on success, -1 on bad file
          */
-        static int load(const char* file, SemanticColorData* semanticColorData = nullptr) noexcept;
-        static void save(const char* file, const SemanticColorData* semanticColorData = nullptr) noexcept;
+        static int load(const char* file, SemanticColourData* semanticColorData = nullptr) noexcept;
+        static void save(const char* file, const SemanticColourData* semanticColorData = nullptr) noexcept;
 
         static void showThemeEditor(void* bOpen) noexcept;
         static void showThemeEditorInline() noexcept;
