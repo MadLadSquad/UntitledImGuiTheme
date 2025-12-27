@@ -22,7 +22,7 @@ namespace UImGui
          * @return Result state. 0 on success, -1 on bad file
          */
         static int load(const char* file, SemanticColourData* semanticColorData = nullptr) noexcept;
-        static void save(const char* file, const SemanticColourData* semanticColorData = nullptr) noexcept;
+        static void save(const char* file, SemanticColourData* semanticColorData = nullptr) noexcept;
 
         static void showThemeEditor(void* bOpen) noexcept;
         static void showThemeEditorInline() noexcept;
@@ -62,11 +62,14 @@ namespace UImGui
             "ResizeGrip",
             "ResizeGripHovered",
             "ResizeGripActive",
-            "Tab",
+            "InputTextCursor",
             "TabHovered",
-            "TabActive",
-            "TabUnfocused",
-            "TabUnfocusedActive",
+            "Tab",
+            "TabSelected",
+            "TabSelectedOverline",
+            "TabDimmed",
+            "TabDimmedSelected",
+            "TabDimmedSelectedOverline",
 #ifdef IMGUI_HAS_DOCK
             "DockingPreview",
             "DockingEmptyBg",
@@ -80,9 +83,13 @@ namespace UImGui
             "TableBorderLight",
             "TableRowBg",
             "TableRowBgAlt",
+            "TextLink",
             "TextSelectedBg",
+            "TreeLines",
             "DragDropTarget",
-            "NavHighlight",
+            "DragDropTargetBg",
+            "UnsavedMarker",
+            "NavCursor",
             "NavWindowingHighlight",
             "NavWindowingDimBg",
             "ModalWindowDimBg",
