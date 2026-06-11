@@ -48,6 +48,7 @@ namespace UImGui
             "ScrollbarGrabHovered",
             "ScrollbarGrabActive",
             "CheckMark",
+            "CheckboxSelectedBg",
             "SliderGrab",
             "SliderGrabActive",
             "Button",

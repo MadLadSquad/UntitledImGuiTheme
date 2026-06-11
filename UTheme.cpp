@@ -111,6 +111,7 @@ int UImGui::Theme::load(const char* file, SemanticColourData* semanticColorData)
     LOAD_YAML_STYLE_VAR(GrabMinSize)
     LOAD_YAML_STYLE_VAR(GrabRounding)
     LOAD_YAML_STYLE_VAR(LogSliderDeadzone)
+    LOAD_YAML_STYLE_VAR(ImageRounding)
     LOAD_YAML_STYLE_VAR(ImageBorderSize)
     LOAD_YAML_STYLE_VAR(TabRounding)
     LOAD_YAML_STYLE_VAR(TabBorderSize)
@@ -132,6 +133,8 @@ int UImGui::Theme::load(const char* file, SemanticColourData* semanticColorData)
     LOAD_YAML_STYLE_VAR(ColorButtonPosition)
     LOAD_YAML_STYLE_VAR(ButtonTextAlign)
     LOAD_YAML_STYLE_VAR(SelectableTextAlign)
+    LOAD_YAML_STYLE_VAR(InputTextCursorSize)
+    LOAD_YAML_STYLE_VAR(SeparatorSize)
     LOAD_YAML_STYLE_VAR(SeparatorTextBorderSize)
     LOAD_YAML_STYLE_VAR(SeparatorTextAlign)
     LOAD_YAML_STYLE_VAR(SeparatorTextPadding)
@@ -279,6 +282,7 @@ void UImGui::Theme::save(const char* file, SemanticColourData* semanticColorData
     OUTPUT_YAML_STYLE_VAR(GrabMinSize)
     OUTPUT_YAML_STYLE_VAR(GrabRounding)
     OUTPUT_YAML_STYLE_VAR(LogSliderDeadzone)
+    OUTPUT_YAML_STYLE_VAR(ImageRounding)
     OUTPUT_YAML_STYLE_VAR(ImageBorderSize)
     OUTPUT_YAML_STYLE_VAR(TabRounding)
     OUTPUT_YAML_STYLE_VAR(TabBorderSize)
@@ -300,6 +304,8 @@ void UImGui::Theme::save(const char* file, SemanticColourData* semanticColorData
     OUTPUT_YAML_STYLE_VAR(ColorButtonPosition)
     OUTPUT_YAML_STYLE_VAR(ButtonTextAlign)
     OUTPUT_YAML_STYLE_VAR(SelectableTextAlign)
+    OUTPUT_YAML_STYLE_VAR(InputTextCursorSize)
+    OUTPUT_YAML_STYLE_VAR(SeparatorSize)
     OUTPUT_YAML_STYLE_VAR(SeparatorTextBorderSize)
     OUTPUT_YAML_STYLE_VAR(SeparatorTextAlign)
     OUTPUT_YAML_STYLE_VAR(SeparatorTextPadding)
@@ -362,6 +368,11 @@ void renderStyleVar(const char* name, bool& t) noexcept
     ImGui::Checkbox(name, &t);
 }
 
+void renderStyleVar(const char* name, int& t) noexcept
+{
+    ImGui::DragInt(name, &t);
+}
+
 void UImGui::Theme::showThemeEditor(void* bOpen) noexcept
 {
     if (ImGui::Begin("UntitledImGuiTheme Theme Editor", static_cast<bool*>(bOpen)))
@@ -411,6 +422,7 @@ void UImGui::Theme::showThemeEditorInline() noexcept
     RENDER_STYLE_VAR_EDIT(GrabMinSize);
     RENDER_STYLE_VAR_EDIT(GrabRounding);
     RENDER_STYLE_VAR_EDIT(LogSliderDeadzone);
+    RENDER_STYLE_VAR_EDIT(ImageRounding);
     RENDER_STYLE_VAR_EDIT(ImageBorderSize);
     RENDER_STYLE_VAR_EDIT(TabRounding);
     RENDER_STYLE_VAR_EDIT(TabBorderSize);
@@ -422,6 +434,7 @@ void UImGui::Theme::showThemeEditorInline() noexcept
     RENDER_STYLE_VAR_EDIT(TabBarOverlineSize);
     RENDER_STYLE_VAR_EDIT(TableAngledHeadersAngle);
     RENDER_STYLE_VAR_EDIT(TableAngledHeadersTextAlign);
+    RENDER_STYLE_VAR_EDIT(TreeLinesFlags);
     RENDER_STYLE_VAR_EDIT(TreeLinesSize);
     RENDER_STYLE_VAR_EDIT(TreeLinesRounding);
     RENDER_STYLE_VAR_EDIT(DragDropTargetRounding);
@@ -431,6 +444,8 @@ void UImGui::Theme::showThemeEditorInline() noexcept
     RENDER_STYLE_VAR_EDIT(ColorButtonPosition);
     RENDER_STYLE_VAR_EDIT(ButtonTextAlign);
     RENDER_STYLE_VAR_EDIT(SelectableTextAlign);
+    RENDER_STYLE_VAR_EDIT(InputTextCursorSize);
+    RENDER_STYLE_VAR_EDIT(SeparatorSize);
     RENDER_STYLE_VAR_EDIT(SeparatorTextBorderSize);
     RENDER_STYLE_VAR_EDIT(SeparatorTextAlign);
     RENDER_STYLE_VAR_EDIT(SeparatorTextPadding);
@@ -452,4 +467,6 @@ void UImGui::Theme::showThemeEditorInline() noexcept
     RENDER_STYLE_VAR_EDIT(HoverStationaryDelay);
     RENDER_STYLE_VAR_EDIT(HoverDelayShort);
     RENDER_STYLE_VAR_EDIT(HoverDelayNormal);
+    RENDER_STYLE_VAR_EDIT(HoverFlagsForTooltipMouse);
+    RENDER_STYLE_VAR_EDIT(HoverFlagsForTooltipNav);
 }
