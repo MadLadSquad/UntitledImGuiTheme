@@ -174,7 +174,7 @@ int UImGui::Theme::load(const char* file, SemanticColourData* semanticColorData)
 
 static void emit_vec4(ryml::NodeRef& node, const ImVec4& vec)
 {
-    node |= ryml::SEQ | ryml::FLOW_SL;
+    node.set_seq(ryml::FLOW_SL);
     if (!node.invalid())
     {
         node.append_child() << vec.x;
@@ -186,7 +186,7 @@ static void emit_vec4(ryml::NodeRef& node, const ImVec4& vec)
 
 static void emit_vec4(ryml::NodeRef& node, const UImGui_ThemeVec4& vec)
 {
-    node |= ryml::SEQ | ryml::FLOW_SL;
+    node.set_seq(ryml::FLOW_SL);
     if (!node.invalid())
     {
         node.append_child() << vec.x;
@@ -216,7 +216,7 @@ void emit_style_var(ryml::NodeRef& node, const T& data) noexcept
 template<>
 void emit_style_var<ImVec2>(ryml::NodeRef& node, const ImVec2& data) noexcept
 {
-    node |= ryml::SEQ | ryml::FLOW_SL;
+    node.set_seq(ryml::FLOW_SL);
     if (!node.invalid())
     {
         node.append_child() << data.x;
@@ -242,7 +242,7 @@ void UImGui::Theme::save(const char* file, SemanticColourData* semanticColorData
     ryml::Tree tree;
 
     ryml::NodeRef root = tree.rootref();
-    root |= ryml::MAP;
+    root.set_map();
 
     for (size_t i = 0; i < ImGuiCol_COUNT; i++)
     {
