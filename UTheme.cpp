@@ -9,10 +9,10 @@ static void read_vec4(const ryml::ConstNodeRef& node, ImVec4& vec)
 {
     if (node.is_seq() && node.num_children() >= 4)
     {
-        node[0] >> vec.x;
-        node[1] >> vec.y;
-        node[2] >> vec.z;
-        node[3] >> vec.w;
+        node[0].load(&vec.x);
+        node[1].load(&vec.y);
+        node[2].load(&vec.z);
+        node[3].load(&vec.w);
     }
 }
 
@@ -20,10 +20,10 @@ static void read_vec4(const ryml::ConstNodeRef& node, UImGui_ThemeVec4& vec)
 {
     if (node.is_seq() && node.num_children() >= 4)
     {
-        node[0] >> vec.x;
-        node[1] >> vec.y;
-        node[2] >> vec.z;
-        node[3] >> vec.w;
+        node[0].load(&vec.x);
+        node[1].load(&vec.y);
+        node[2].load(&vec.z);
+        node[3].load(&vec.w);
     }
 }
 
@@ -37,11 +37,11 @@ void parse_style_var(const ryml::ConstNodeRef& node, T& data) noexcept
         {
             // Get as standard integer
             std::underlying_type_t<T> tmp = data;
-            node >> tmp; // Get the data
+            node.load(&tmp); // Get the data
             data = static_cast<T>(tmp); // Cast back to enum
         }
         else
-            node >> data;
+            node.load(&data);
     }
 }
 
@@ -50,8 +50,8 @@ void parse_style_var<ImVec2>(const ryml::ConstNodeRef& node, ImVec2& data) noexc
 {
     if (!node.invalid() && node.is_seq() && node.num_children() >= 2)
     {
-        node[0] >> data.x;
-        node[1] >> data.y;
+        node[0].load(&data.x);
+        node[1].load(&data.y);
     }
 }
 
@@ -177,10 +177,10 @@ static void emit_vec4(ryml::NodeRef& node, const ImVec4& vec)
     node.set_seq(ryml::FLOW_SL);
     if (!node.invalid())
     {
-        node.append_child() << vec.x;
-        node.append_child() << vec.y;
-        node.append_child() << vec.z;
-        node.append_child() << vec.w;
+        node.append_child().save(vec.x);
+        node.append_child().save(vec.y);
+        node.append_child().save(vec.z);
+        node.append_child().save(vec.w);
     }
 }
 
@@ -189,10 +189,10 @@ static void emit_vec4(ryml::NodeRef& node, const UImGui_ThemeVec4& vec)
     node.set_seq(ryml::FLOW_SL);
     if (!node.invalid())
     {
-        node.append_child() << vec.x;
-        node.append_child() << vec.y;
-        node.append_child() << vec.z;
-        node.append_child() << vec.w;
+        node.append_child().save(vec.x);
+        node.append_child().save(vec.y);
+        node.append_child().save(vec.z);
+        node.append_child().save(vec.w);
     }
 }
 
@@ -206,10 +206,10 @@ void emit_style_var(ryml::NodeRef& node, const T& data) noexcept
         {
             // Get as standard integer
             std::underlying_type_t<T> tmp = data;
-            node << tmp; // Get the data
+            node.save(tmp); // Get the data
         }
         else
-            node << data;
+            node.save(data);
     }
 }
 
@@ -219,8 +219,8 @@ void emit_style_var<ImVec2>(ryml::NodeRef& node, const ImVec2& data) noexcept
     node.set_seq(ryml::FLOW_SL);
     if (!node.invalid())
     {
-        node.append_child() << data.x;
-        node.append_child() << data.y;
+        node.append_child().save(data.x);
+        node.append_child().save(data.y);
     }
 }
 
