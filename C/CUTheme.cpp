@@ -6,9 +6,9 @@ int UImGui_Theme_load(const char* file, UImGui_SemanticColourData* semanticColou
     return UImGui::Theme::load(file, semanticColourData);
 }
 
-void UImGui_Theme_save(const char* save, UImGui_SemanticColourData* semanticColourData)
+int UImGui_Theme_save(const char* save, UImGui_SemanticColourData* semanticColourData)
 {
-    UImGui::Theme::save(save, semanticColourData);
+    return UImGui::Theme::save(save, semanticColourData);
 }
 
 void UImGui_Theme_showThemeEditor(void* bOpen)

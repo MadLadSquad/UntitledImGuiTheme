@@ -19,10 +19,17 @@ namespace UImGui
          * @brief Loads a theme from file location
          * @param file - The location of the theme file
          * @param semanticColorData - A semantic colour data struct that will be filled with semantic colour data
-         * @return Result state. 0 on success, -1 on bad file
+         * @return Result state. 0 on success, -1 on a file that cannot be read or does not contain a theme map
          */
         static int load(const char* file, SemanticColourData* semanticColorData = nullptr) noexcept;
-        static void save(const char* file, SemanticColourData* semanticColorData = nullptr) noexcept;
+
+        /**
+         * @brief Saves the current theme to a file location
+         * @param file - The location of the theme file
+         * @param semanticColorData - A semantic colour data struct whose contents will be written out alongside the style
+         * @return Result state. 0 on success, -1 if the file could not be written
+         */
+        static int save(const char* file, SemanticColourData* semanticColorData = nullptr) noexcept;
 
         static void showThemeEditor(void* bOpen) noexcept;
         static void showThemeEditorInline() noexcept;

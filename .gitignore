@@ -39,3 +39,6 @@ imgui/
 .idea/
 .vs-code/
 .vs/
+graphify-out/
+.agents/
+.claude/

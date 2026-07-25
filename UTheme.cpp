@@ -1,83 +1,148 @@
 #include "UTheme.hpp"
 #include <fstream>
+#include <string>
+#include <type_traits>
 #include <ryml.hpp>
 
-#define LOAD_YAML_STYLE_VAR(x) parse_style_var<decltype(style.x)>(root[#x], style.x);
-#define LOAD_YAML_SEMANTIC_COLOUR(x, y) read_vec4(root[#x], x->y)
+static bool read_file(const char* file, std::string& out)
+{
+    std::ifstream f(file);
+    if (!f.is_open())
+        return false;
+
+    f.seekg(0, std::ios::end);
+    const std::streamoff size = f.tellg();
+    if (size <= 0)
+        return false;
+
+    out.resize(static_cast<size_t>(size));
+    f.seekg(0, std::ios::beg);
+    f.read(&out[0], static_cast<std::streamsize>(size));
+    // Reading in text mode collapses CRLF on Windows, so fewer bytes than the on-disk size may have been extracted
+    out.resize(static_cast<size_t>(f.gcount()));
+
+    return !out.empty();
+}
+
+// ryml only asserts on missing or ill-typed nodes when RYML_USE_ASSERT is on; a release build performs the same
+// access out of bounds instead. Every read therefore checks readability itself, and leaves the destination at its
+// current value when the node is absent or holds something other than what is expected, so a partial or
+// hand-broken theme file degrades to "keep the current style" rather than to undefined behaviour.
+static void read_floats(const ryml::ConstNodeRef& node, float* out, const size_t count)
+{
+    if (!node.readable() || !node.is_seq() || static_cast<size_t>(node.num_children()) < count)
+        return;
+
+    for (size_t i = 0; i < count; i++)
+    {
+        const ryml::ConstNodeRef child = node[static_cast<ryml::id_type>(i)];
+        if (child.readable() && child.has_val())
+            [[maybe_unused]] const ryml::ReadResult result = child.deserialize(&out[i]);
+    }
+}
 
 static void read_vec4(const ryml::ConstNodeRef& node, ImVec4& vec)
 {
-    if (node.is_seq() && node.num_children() >= 4)
-    {
-        node[0].load(&vec.x);
-        node[1].load(&vec.y);
-        node[2].load(&vec.z);
-        node[3].load(&vec.w);
-    }
+    read_floats(node, &vec.x, 4);
 }
 
 static void read_vec4(const ryml::ConstNodeRef& node, UImGui_ThemeVec4& vec)
 {
-    if (node.is_seq() && node.num_children() >= 4)
-    {
-        node[0].load(&vec.x);
-        node[1].load(&vec.y);
-        node[2].load(&vec.z);
-        node[3].load(&vec.w);
-    }
+    read_floats(node, &vec.x, 4);
 }
 
+// static on the primary template gives every specialisation internal linkage too, which is why the ImVec2
+// specialisations below cannot repeat it - a storage class on an explicit specialisation is ill-formed
 template<typename T>
-void parse_style_var(const ryml::ConstNodeRef& node, T& data) noexcept
+static void parse_style_var(const ryml::ConstNodeRef& node, T& data)
 {
-    if (!node.invalid())
+    if (!node.readable() || !node.has_val())
+        return;
+
+    // Handling for ImGuiDir and other enum types
+    if constexpr (std::is_enum_v<T>)
     {
-        // Handling for ImGuiDir and other enum types
-        if constexpr (std::is_enum_v<T>)
-        {
-            // Get as standard integer
-            std::underlying_type_t<T> tmp = data;
-            node.load(&tmp); // Get the data
+        // Get as standard integer
+        auto tmp = static_cast<std::underlying_type_t<T>>(data);
+        if (node.deserialize(&tmp)) // Get the data
             data = static_cast<T>(tmp); // Cast back to enum
-        }
-        else
-            node.load(&data);
     }
+    else
+        [[maybe_unused]] const ryml::ReadResult result = node.deserialize(&data);
 }
 
 template<>
-void parse_style_var<ImVec2>(const ryml::ConstNodeRef& node, ImVec2& data) noexcept
+void parse_style_var<ImVec2>(const ryml::ConstNodeRef& node, ImVec2& data)
 {
-    if (!node.invalid() && node.is_seq() && node.num_children() >= 2)
-    {
-        node[0].load(&data.x);
-        node[1].load(&data.y);
-    }
+    read_floats(node, &data.x, 2);
 }
 
+static void write_floats(ryml::NodeRef& node, const float* values, const size_t count)
+{
+    if (node.invalid())
+        return;
+
+    node.set_seq(ryml::FLOW_SL);
+    for (size_t i = 0; i < count; i++)
+        node.append_child().save(values[i]);
+}
+
+static void emit_vec4(ryml::NodeRef& node, const ImVec4& vec)
+{
+    write_floats(node, &vec.x, 4);
+}
+
+static void emit_vec4(ryml::NodeRef& node, const UImGui_ThemeVec4& vec)
+{
+    write_floats(node, &vec.x, 4);
+}
+
+template<typename T>
+static void emit_style_var(ryml::NodeRef& node, const T& data) noexcept
+{
+    if (node.invalid())
+        return;
+
+    // Handling for ImGuiDir and other enum types
+    if constexpr (std::is_enum_v<T>)
+    {
+        // Save as standard integer
+        const auto tmp = static_cast<std::underlying_type_t<T>>(data);
+        node.save(tmp);
+    }
+    else
+        node.save(data);
+}
+
+template<>
+void emit_style_var<ImVec2>(ryml::NodeRef& node, const ImVec2& data) noexcept
+{
+    write_floats(node, &data.x, 2);
+}
+
+#define LOAD_YAML_STYLE_VAR(x) parse_style_var<decltype(style.x)>(root.find_child(#x), style.x);
+#define LOAD_YAML_SEMANTIC_COLOUR(x, y) read_vec4(root.find_child(#y), x->y)
 
 int UImGui::Theme::load(const char* file, SemanticColourData* semanticColorData) noexcept
 {
-    std::ifstream f(file);
-    f.seekg(0, std::ios::end);
-    const size_t size = f.tellg();
+    std::string buffer;
+    if (!read_file(file, buffer))
+        return -1;
 
-    std::string buffer(size, ' ');
-
-    f.seekg(0);
-    f.read(&buffer[0], static_cast<long>(size));
-    f.close();
-
-    auto tree = ryml::parse_in_arena(buffer.c_str());
+    // Parsing in place saves a copy of the whole buffer into the ryml arena; the tree points into buffer, which
+    // outlives every read below
+    const ryml::Tree tree = ryml::parse_in_place(ryml::substr(&buffer[0], buffer.size()));
     if (tree.empty())
         return -1;
 
-    const auto root = tree.rootref();
+    const ryml::ConstNodeRef root = tree.crootref();
+    if (!root.readable() || !root.is_map())
+        return -1;
+
     auto& style = ImGui::GetStyle();
 
     for (size_t i = 0; i < ImGuiCol_COUNT; i++)
-        if (!root[colourStrings[i]].invalid())
-            read_vec4(root[colourStrings[i]], style.Colors[i]);
+        read_vec4(root.find_child(colourStrings[i]), style.Colors[i]);
 
     LOAD_YAML_STYLE_VAR(FontSizeBase)
     LOAD_YAML_STYLE_VAR(FontScaleMain)
@@ -126,6 +191,8 @@ int UImGui::Theme::load(const char* file, SemanticColourData* semanticColorData)
     LOAD_YAML_STYLE_VAR(TreeLinesFlags)
     LOAD_YAML_STYLE_VAR(TreeLinesSize)
     LOAD_YAML_STYLE_VAR(TreeLinesRounding)
+    LOAD_YAML_STYLE_VAR(MenuItemRounding)
+    LOAD_YAML_STYLE_VAR(SelectableRounding)
     LOAD_YAML_STYLE_VAR(DragDropTargetRounding)
     LOAD_YAML_STYLE_VAR(DragDropTargetBorderSize)
     LOAD_YAML_STYLE_VAR(DragDropTargetPadding)
@@ -172,58 +239,6 @@ int UImGui::Theme::load(const char* file, SemanticColourData* semanticColorData)
     return 0;
 }
 
-static void emit_vec4(ryml::NodeRef& node, const ImVec4& vec)
-{
-    node.set_seq(ryml::FLOW_SL);
-    if (!node.invalid())
-    {
-        node.append_child().save(vec.x);
-        node.append_child().save(vec.y);
-        node.append_child().save(vec.z);
-        node.append_child().save(vec.w);
-    }
-}
-
-static void emit_vec4(ryml::NodeRef& node, const UImGui_ThemeVec4& vec)
-{
-    node.set_seq(ryml::FLOW_SL);
-    if (!node.invalid())
-    {
-        node.append_child().save(vec.x);
-        node.append_child().save(vec.y);
-        node.append_child().save(vec.z);
-        node.append_child().save(vec.w);
-    }
-}
-
-template<typename T>
-void emit_style_var(ryml::NodeRef& node, const T& data) noexcept
-{
-    if (!node.invalid())
-    {
-        // Handling for ImGuiDir and other enum types
-        if constexpr (std::is_enum_v<T>)
-        {
-            // Get as standard integer
-            std::underlying_type_t<T> tmp = data;
-            node.save(tmp); // Get the data
-        }
-        else
-            node.save(data);
-    }
-}
-
-template<>
-void emit_style_var<ImVec2>(ryml::NodeRef& node, const ImVec2& data) noexcept
-{
-    node.set_seq(ryml::FLOW_SL);
-    if (!node.invalid())
-    {
-        node.append_child().save(data.x);
-        node.append_child().save(data.y);
-    }
-}
-
 #define OUTPUT_YAML_STYLE_VAR(x)        \
 {                                       \
     auto ref = root[#x];                \
@@ -233,10 +248,10 @@ void emit_style_var<ImVec2>(ryml::NodeRef& node, const ImVec2& data) noexcept
 #define OUTPUT_YAML_SEMANTIC_COLOUR(x, y)   \
 {                                           \
     auto ref = root[#y];                    \
-    emit_vec4(ref, x->y);                    \
+    emit_vec4(ref, x->y);                   \
 }
 
-void UImGui::Theme::save(const char* file, SemanticColourData* semanticColorData) noexcept
+int UImGui::Theme::save(const char* file, SemanticColourData* semanticColorData) noexcept
 {
     auto& style = ImGui::GetStyle();
     ryml::Tree tree;
@@ -297,6 +312,8 @@ void UImGui::Theme::save(const char* file, SemanticColourData* semanticColorData
     OUTPUT_YAML_STYLE_VAR(TreeLinesFlags)
     OUTPUT_YAML_STYLE_VAR(TreeLinesSize)
     OUTPUT_YAML_STYLE_VAR(TreeLinesRounding)
+    OUTPUT_YAML_STYLE_VAR(MenuItemRounding)
+    OUTPUT_YAML_STYLE_VAR(SelectableRounding)
     OUTPUT_YAML_STYLE_VAR(DragDropTargetRounding)
     OUTPUT_YAML_STYLE_VAR(DragDropTargetBorderSize)
     OUTPUT_YAML_STYLE_VAR(DragDropTargetPadding)
@@ -342,33 +359,38 @@ void UImGui::Theme::save(const char* file, SemanticColourData* semanticColorData
     }
 
     std::ofstream o(file);
+    if (!o.is_open())
+        return -1;
+
     o << tree;
     o.close();
+
+    return o.good() ? 0 : -1;
 }
 
-void renderStyleVar(const char* name, float& t) noexcept
+static void renderStyleVar(const char* name, float& t) noexcept
 {
     ImGui::DragFloat(name, &t);
 }
 
-void renderStyleVar(const char* name, ImVec2& t) noexcept
+static void renderStyleVar(const char* name, ImVec2& t) noexcept
 {
-    ImGui::DragFloat2(name, reinterpret_cast<float*>(&t));
+    ImGui::DragFloat2(name, &t.x);
 }
 
-void renderStyleVar(const char* name, ImGuiDir& dir) noexcept
+static void renderStyleVar(const char* name, ImGuiDir& dir) noexcept
 {
     int tmpdir = dir + 1;
     if (ImGui::Combo(name, &tmpdir, "None\0Left\0Right\0Up\0Down\0"))
         dir = static_cast<ImGuiDir>(tmpdir - 1);
 }
 
-void renderStyleVar(const char* name, bool& t) noexcept
+static void renderStyleVar(const char* name, bool& t) noexcept
 {
     ImGui::Checkbox(name, &t);
 }
 
-void renderStyleVar(const char* name, int& t) noexcept
+static void renderStyleVar(const char* name, int& t) noexcept
 {
     ImGui::DragInt(name, &t);
 }
@@ -376,10 +398,8 @@ void renderStyleVar(const char* name, int& t) noexcept
 void UImGui::Theme::showThemeEditor(void* bOpen) noexcept
 {
     if (ImGui::Begin("UntitledImGuiTheme Theme Editor", static_cast<bool*>(bOpen)))
-    {
         showThemeEditorInline();
-        ImGui::End();
-    }
+    ImGui::End();
 }
 
 #define RENDER_STYLE_VAR_EDIT(x) renderStyleVar(#x, style.x)
@@ -388,7 +408,7 @@ void UImGui::Theme::showThemeEditorInline() noexcept
 {
     auto& style = ImGui::GetStyle();
     for (size_t i = 0; i < ImGuiCol_COUNT; i++)
-        ImGui::ColorEdit4(colourStrings[i], reinterpret_cast<float*>(&style.Colors[i]));
+        ImGui::ColorEdit4(colourStrings[i], &style.Colors[i].x);
 
     RENDER_STYLE_VAR_EDIT(FontSizeBase);
     RENDER_STYLE_VAR_EDIT(FontScaleMain);
@@ -437,6 +457,8 @@ void UImGui::Theme::showThemeEditorInline() noexcept
     RENDER_STYLE_VAR_EDIT(TreeLinesFlags);
     RENDER_STYLE_VAR_EDIT(TreeLinesSize);
     RENDER_STYLE_VAR_EDIT(TreeLinesRounding);
+    RENDER_STYLE_VAR_EDIT(MenuItemRounding);
+    RENDER_STYLE_VAR_EDIT(SelectableRounding);
     RENDER_STYLE_VAR_EDIT(DragDropTargetRounding);
     RENDER_STYLE_VAR_EDIT(DragDropTargetBorderSize);
     RENDER_STYLE_VAR_EDIT(DragDropTargetPadding);
