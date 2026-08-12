@@ -1,4 +1,5 @@
 #include "UTheme.hpp"
+#include <cmath>
 #include <fstream>
 #include <string>
 #include <type_traits>
@@ -217,7 +218,17 @@ int UImGui::Theme::load(const char* file, SemanticColourData* semanticColorData)
     LOAD_YAML_STYLE_VAR(AntiAliasedLines)
     LOAD_YAML_STYLE_VAR(AntiAliasedLinesUseTex)
     LOAD_YAML_STYLE_VAR(AntiAliasedFill)
-    LOAD_YAML_STYLE_VAR(CurveTessellationTol)
+
+    // CurveTessellationTol was obsoleted in imgui 1.93.0 in favour of CurveTessellationMaxError, which holds its
+    // square root. Themes written before the rename only carry the old key, so it is read first and the new key
+    // overrides it when both are present. A zero is "unset" rather than a value - imgui zeroes the obsolete member
+    // on every frame - and converting it would trip imgui's CurveTessellationMaxError > 0.0f assert
+    float legacyCurveTessellationTol = 0.0f;
+    parse_style_var(root.find_child("CurveTessellationTol"), legacyCurveTessellationTol);
+    if (legacyCurveTessellationTol > 0.0f)
+        style.CurveTessellationMaxError = std::sqrt(legacyCurveTessellationTol);
+
+    LOAD_YAML_STYLE_VAR(CurveTessellationMaxError)
     LOAD_YAML_STYLE_VAR(CircleTessellationMaxError)
 
     LOAD_YAML_STYLE_VAR(HoverStationaryDelay)
@@ -338,7 +349,7 @@ int UImGui::Theme::save(const char* file, SemanticColourData* semanticColorData)
     OUTPUT_YAML_STYLE_VAR(AntiAliasedLines)
     OUTPUT_YAML_STYLE_VAR(AntiAliasedLinesUseTex)
     OUTPUT_YAML_STYLE_VAR(AntiAliasedFill)
-    OUTPUT_YAML_STYLE_VAR(CurveTessellationTol)
+    OUTPUT_YAML_STYLE_VAR(CurveTessellationMaxError)
     OUTPUT_YAML_STYLE_VAR(CircleTessellationMaxError)
 
     OUTPUT_YAML_STYLE_VAR(HoverStationaryDelay)
@@ -483,7 +494,7 @@ void UImGui::Theme::showThemeEditorInline() noexcept
     RENDER_STYLE_VAR_EDIT(AntiAliasedLines);
     RENDER_STYLE_VAR_EDIT(AntiAliasedLinesUseTex);
     RENDER_STYLE_VAR_EDIT(AntiAliasedFill);
-    RENDER_STYLE_VAR_EDIT(CurveTessellationTol);
+    RENDER_STYLE_VAR_EDIT(CurveTessellationMaxError);
     RENDER_STYLE_VAR_EDIT(CircleTessellationMaxError);
 
     RENDER_STYLE_VAR_EDIT(HoverStationaryDelay);
