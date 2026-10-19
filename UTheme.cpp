@@ -216,7 +216,7 @@ int UImGui::Theme::load(const char* file, SemanticColourData* semanticColorData)
 
     LOAD_YAML_STYLE_VAR(MouseCursorScale)
     LOAD_YAML_STYLE_VAR(AntiAliasedLines)
-    LOAD_YAML_STYLE_VAR(AntiAliasedLinesUseTex)
+    LOAD_YAML_STYLE_VAR(AntiAliasedLineEnds)
     LOAD_YAML_STYLE_VAR(AntiAliasedFill)
 
     // CurveTessellationTol was obsoleted in imgui 1.93.0 in favour of CurveTessellationMaxError, which holds its
@@ -347,7 +347,7 @@ int UImGui::Theme::save(const char* file, SemanticColourData* semanticColorData)
 
     OUTPUT_YAML_STYLE_VAR(MouseCursorScale)
     OUTPUT_YAML_STYLE_VAR(AntiAliasedLines)
-    OUTPUT_YAML_STYLE_VAR(AntiAliasedLinesUseTex)
+    OUTPUT_YAML_STYLE_VAR(AntiAliasedLineEnds)
     OUTPUT_YAML_STYLE_VAR(AntiAliasedFill)
     OUTPUT_YAML_STYLE_VAR(CurveTessellationMaxError)
     OUTPUT_YAML_STYLE_VAR(CircleTessellationMaxError)
@@ -492,7 +492,7 @@ void UImGui::Theme::showThemeEditorInline() noexcept
 
     RENDER_STYLE_VAR_EDIT(MouseCursorScale);
     RENDER_STYLE_VAR_EDIT(AntiAliasedLines);
-    RENDER_STYLE_VAR_EDIT(AntiAliasedLinesUseTex);
+    RENDER_STYLE_VAR_EDIT(AntiAliasedLineEnds);
     RENDER_STYLE_VAR_EDIT(AntiAliasedFill);
     RENDER_STYLE_VAR_EDIT(CurveTessellationMaxError);
     RENDER_STYLE_VAR_EDIT(CircleTessellationMaxError);
